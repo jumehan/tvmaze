@@ -4,6 +4,7 @@ const $showsList = $("#showsList"); //show area
 const $episodesArea = $("#episodesArea"); //episode area
 const $searchForm = $("#searchForm"); //form
 const TVMAZE_API = "https://api.tvmaze.com/search/shows";
+const TVMAZE_EPISODES_API = "https://api.tvmaze.com/shows/";
 const ALT_IMG = "https://tinyurl.com/tv-missing";
 
 
@@ -20,18 +21,28 @@ const ALT_IMG = "https://tinyurl.com/tv-missing";
 async function getShowsByTerm(searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   const tvShowResults = await axios.get(TVMAZE_API, { params: { q: searchTerm } });
-  // use map
-  let tvShow = [];
+  // TODO: use map
+  let tvShows = [];
   for (let i = 0; i < tvShowResults.data.length; i++) {
-    tvShow.push({
+    tvShows.push({
       id: tvShowResults.data[i].show.id,
       name: tvShowResults.data[i].show.name,
       image: tvShowResults.data[i].show.image ? tvShowResults.data[i].show.image.medium : ALT_IMG,
       summary: tvShowResults.data[i].show.summary
     });
-
   }
-  return tvShow;
+    // return tvShowResults.data.map(result => {
+    //   id: result.show.id,
+    //   name: result.show.name,
+    //   image: result.show.image ? result.show.image.medium : ALT_IMG,
+    //   summary: result.show.summary});
+
+      // return tvShowResults.map(result => {
+      //   id: result.show.id,
+      //   name: result.show.name,
+      //   image: result.show.image ? tvShowResults.data[i].show.image.medium : ALT_IMG,
+      //   summary: result.show.summary})
+      return tvShows;
 }
 
 
@@ -89,7 +100,23 @@ $searchForm.on("submit", async function (evt) {
  *      { id, name, season, number }
  */
 
-// async function getEpisodesOfShow(id) { }
+async function getEpisodesOfShow(id) {
+
+  const tvEpisodes = await axios.get(`${TVMAZE_EPISODES_API}${id}/episodes`, {params: {q: id}});
+
+  const episodes = [];
+
+  for (let i = 0; i < tvEpisodes.data.length; i++) {
+    episodes.push({
+      id: tvEpisodes.data[i].id,
+      name: tvEpisodes.data[i].name,
+      season: tvEpisodes.data[i].season,
+      number: tvEpisodes.data[i].number
+    });
+  }
+
+  return episodes;
+ }
 
 /** Write a clear docstring for this function... */
 
