@@ -4,7 +4,7 @@ const $showsList = $("#showsList"); //show area
 const $episodesArea = $("#episodesArea");
 const $episodesList = $("#episodesList"); //episode area
 const $searchForm = $("#searchForm"); //form
-const TVMAZE_API = "https://api.tvmaze.com/";
+const TVMAZE_API_URL = "https://api.tvmaze.com/";
 const ALT_IMG = "https://tinyurl.com/tv-missing";
 
 
@@ -17,11 +17,10 @@ const ALT_IMG = "https://tinyurl.com/tv-missing";
  */
 
 //param: searchTerm
-//grad ID: []
-
+//could also use axios url/baseURL/method/param
 async function getShowsByTerm(searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  const tvShowResults = await axios.get(TVMAZE_API + "search/shows", { params: { q: searchTerm } });
+  const tvShowResults = await axios.get(TVMAZE_API_URL + "search/shows", { params: { q: searchTerm } });
 
   return tvShowResults.data.map(result => {
    return {
@@ -92,7 +91,7 @@ $searchForm.on("submit", async function (evt) {
 
 async function getEpisodesOfShow(id) {
 
-  const apiResponse = await axios.get(`${TVMAZE_API}shows/${id}/episodes`, { params: { q: id } });
+  const apiResponse = await axios.get(`${TVMAZE_API_URL}shows/${id}/episodes`, { params: { q: id } });
 
   return apiResponse.data.map( result => {
     return {
@@ -127,9 +126,9 @@ function populateEpisodes(episodes) {
 async function displayShowEpisodes(evt) {
   $episodesList.empty();
 
-  let id = $(evt.target).closest(".Show").data("show-id");
+  const showId = $(evt.target).closest(".Show").data("show-id");
 
-  let episodes = await getEpisodesOfShow(id);
+  const episodes = await getEpisodesOfShow(showId);
   populateEpisodes(episodes);
   $episodesArea.show();
 }
