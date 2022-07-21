@@ -4,8 +4,7 @@ const $showsList = $("#showsList"); //show area
 const $episodesArea = $("#episodesArea");
 const $episodesList = $("#episodesList"); //episode area
 const $searchForm = $("#searchForm"); //form
-const TVMAZE_API = "https://api.tvmaze.com/search/shows";
-const TVMAZE_EPISODES_API = "https://api.tvmaze.com/shows/";
+const TVMAZE_API = "https://api.tvmaze.com/";
 const ALT_IMG = "https://tinyurl.com/tv-missing";
 
 
@@ -22,17 +21,7 @@ const ALT_IMG = "https://tinyurl.com/tv-missing";
 
 async function getShowsByTerm(searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  const tvShowResults = await axios.get(TVMAZE_API, { params: { q: searchTerm } });
-  // TODO: use map
-  // let tvShows = [];
-  // for (let i = 0; i < tvShowResults.data.length; i++) {
-  //   tvShows.push({
-  //     id: tvShowResults.data[i].show.id,
-  //     name: tvShowResults.data[i].show.name,
-  //     image: tvShowResults.data[i].show.image ? tvShowResults.data[i].show.image.medium : ALT_IMG,
-  //     summary: tvShowResults.data[i].show.summary
-  //   });
-  // }
+  const tvShowResults = await axios.get(TVMAZE_API + "search/shows", { params: { q: searchTerm } });
 
   return tvShowResults.data.map(result => {
    return {
@@ -64,7 +53,7 @@ function populateShows(shows) {
              <div class="media-body">
                <h5 class="text-primary">${show.name}</h5>
                <div><small>${show.summary}</small></div>
-               <button class="btn btn-outline-light btn-sm Show-getEpisodes"
+               <button class="episodeBtn btn btn-outline-light btn-sm Show-getEpisodes"
                id="btn-${show.id}">
                  Episodes
                </button>
@@ -103,20 +92,16 @@ $searchForm.on("submit", async function (evt) {
 
 async function getEpisodesOfShow(id) {
 
-  const tvEpisodes = await axios.get(`${TVMAZE_EPISODES_API}${id}/episodes`, { params: { q: id } });
+  const apiResponse = await axios.get(`${TVMAZE_API}shows/${id}/episodes`, { params: { q: id } });
 
-  const episodes = [];
-
-  for (let i = 0; i < tvEpisodes.data.length; i++) {
-    episodes.push({
-      id: tvEpisodes.data[i].id,
-      name: tvEpisodes.data[i].name,
-      season: tvEpisodes.data[i].season,
-      number: tvEpisodes.data[i].number
-    });
-  }
-
-  return episodes;
+  return apiResponse.data.map( result => {
+    return {
+      id: result.id,
+      name: result.name,
+      season: result.season,
+      number: result.number
+    }
+  });
 }
 
 /** Write a clear docstring for this function... */
@@ -127,7 +112,7 @@ function populateEpisodes(episodes) {
     const $episode =
 
       $(
-        `<li>${episode.name} (season ${episode.season}, number ${episode.number}"></li>
+        `<li>${episode.name} (season ${episode.season}, number ${episode.number})</li>
       `);
 
     $episodesList.append($episode);
@@ -139,11 +124,14 @@ function populateEpisodes(episodes) {
 //get the list of episodes via async function getEpisodesOfShow(id)
 //populate the episode list UL with function populateEpisodes(episodes)
 //$episodesArea.hide() -> unhide
-function displayShowEpisodes(evt) {
-  //show is
+async function displayShowEpisodes(evt) {
+  $episodesList.empty();
+
   let id = $(evt.target).closest(".Show").data("show-id");
-  getEpisodesOfShow(id);
+
+  let episodes = await getEpisodesOfShow(id);
   populateEpisodes(episodes);
+  $episodesArea.show();
 }
 
- //(.....).on("click", displayShowEpisodes() )
+ $showsList.on("click", ".episodeBtn", displayShowEpisodes);
